@@ -2,7 +2,6 @@ package com.testAPI.Controllers;
 
 import com.testAPI.Model.Food;
 import com.testAPI.Services.FoodService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -10,10 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/Foods")
-public class FoodsController {
+public class FoodsController extends BaseController
+{
 
     //@Autowired
-    private FoodService service = new FoodService();    // Autowired не заводится
+    private FoodService service = new FoodService(dblayer);    // Autowired не заводится
 
     @RequestMapping(
             value = "/Ping",
