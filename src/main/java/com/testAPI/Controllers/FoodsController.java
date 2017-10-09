@@ -1,5 +1,6 @@
 package com.testAPI.Controllers;
 
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,6 +14,7 @@ public class FoodsController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public String Ping()
     {
-        return "OK";
+            return "OK)))";
     }
+
 }
