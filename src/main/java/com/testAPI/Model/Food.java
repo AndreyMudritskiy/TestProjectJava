@@ -20,11 +20,6 @@ public class Food
         this.Fats = (String) row.get(2);
     }
 
-    public Food()
-    {
-
-    }
-
     public  ArrayList<List<Object>> toObjectList()
     {
         List<Object>  DataList = new ArrayList<>();

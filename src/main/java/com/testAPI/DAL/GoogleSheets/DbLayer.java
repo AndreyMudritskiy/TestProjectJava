@@ -7,11 +7,12 @@ import com.testAPI.Model.Food;
 public class DbLayer implements IDbLayer {
 
     private IRepository<Food> _foodRepository;
+    private GoogleSheetsDataProvider googleSheetsDataProvider = new GoogleSheetsDataProvider();
 
     @Override
     public IRepository<Food> FoodsRepository() {
         if(_foodRepository == null)
-            _foodRepository = new FoodsRepository();
+            _foodRepository = new FoodsRepository(googleSheetsDataProvider);
 
         return _foodRepository;
     }

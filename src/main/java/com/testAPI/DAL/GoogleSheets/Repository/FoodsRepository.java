@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
 
+import com.testAPI.DAL.GoogleSheets.GoogleSheetsDataProvider;
 import com.testAPI.DAL.IRepository;
 import com.testAPI.Model.Food;
 
@@ -27,121 +28,38 @@ import java.util.List;
 
 public class FoodsRepository implements IRepository<Food>
 {
+    final String spreadsheetId = "1vaJN8sqoYXZtFSYzChlXMiNdUlO9SUgC3KvYh-FPsvY";
+    private GoogleSheetsDataProvider googleSheetsDataProvider;
 
-    private static final String APPLICATION_NAME = "Google Sheets API Java Test Project";
-
-    private static final java.io.File DATA_STORE_DIR = new java.io.File(
-            System.getProperty("user.home"), ".credentials/sheets.googleapis.com-java-TestProject");
-
-    private static FileDataStoreFactory DATA_STORE_FACTORY;
-
-    private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-    private static HttpTransport HTTP_TRANSPORT;
-
-
-    private static final List<String> SCOPES =
-            Arrays.asList(SheetsScopes.SPREADSHEETS);
-
-
-    private static String spreadsheetId = "1vaJN8sqoYXZtFSYzChlXMiNdUlO9SUgC3KvYh-FPsvY";
-
-
-    static {
-        try {
-            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    private static Credential authorize() throws IOException {
-        // Load client secrets.
-        String path = System.getProperty("user.dir") +"//client_secret.json";
-        InputStream in =  new FileInputStream(path);
-        GoogleClientSecrets clientSecrets =
-                GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
-        // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow =
-                new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                        .setDataStoreFactory(DATA_STORE_FACTORY)
-                        .setAccessType("offline")
-                        .build();
-        Credential credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver())
-                .authorize("user");
-
-        return credential;
-    }
-
-    private static Sheets getSheetsService() throws IOException {
-        Credential credential = authorize();
-        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+    public FoodsRepository(GoogleSheetsDataProvider googleSheetsDataProvider)
+    {
+        this.googleSheetsDataProvider = googleSheetsDataProvider;
+        this.googleSheetsDataProvider.SetSpreadsheetId(spreadsheetId);
     }
 
     @Override
     public Food Get(String ID) {
-        try {
-            Sheets service = getSheetsService();
-            String range = "A"+ID+":C"+ID;
-            ValueRange response = service.spreadsheets().values()
-                    .get(spreadsheetId, range)
-                    .execute();
-            List<List<Object>> values = response.getValues();
-            if (values == null || values.size() == 0) {
-                return  null;
-            } else {
-                List<Object> row = values.get(0);
-                Food food =  new Food(ID, row);
-                return food;
 
-            }
-        }catch (Exception e)
-        {
-            return null;
+        String range = "A"+ID+":C"+ID;
+        List<List<Object>> values =  googleSheetsDataProvider.Get(range);
+
+        if (values == null || values.size() == 0) {
+            return  null;
+        } else {
+            List<Object> row = values.get(0);
+            return new Food(ID, row);
         }
     }
 
     @Override
     public void Set(Food model) {
-        try {
-            Sheets service = getSheetsService();
-            String range = "A"+model.ID+":C"+model.ID;
-
-            ValueRange valueRange = new ValueRange()
-                    .setMajorDimension("ROWS").
-                            setValues(model.toObjectList());
-            service.spreadsheets().values()
-                    .append(spreadsheetId, range,valueRange)
-                    .setValueInputOption("RAW")
-                    .execute();
-        }catch (Exception e)
-        {
-
-        }
+        String range = "A"+model.ID+":C"+model.ID;
+        googleSheetsDataProvider.Set(range, model);
     }
 
     @Override
     public void Updata(Food model) {
-        try {
-            Sheets service = getSheetsService();
-            String range = "A"+model.ID+":C"+model.ID;
-
-            ValueRange valueRange = new ValueRange()
-                    .setMajorDimension("ROWS").
-                            setValues(model.toObjectList());
-            service.spreadsheets().values()
-                    .update(spreadsheetId, range,valueRange)
-                    .setValueInputOption("RAW")
-                    .execute();
-
-        }catch (Exception e)
-        {
-
-        }
+        String range = "A"+model.ID+":C"+model.ID;
+        googleSheetsDataProvider.Updata(range, model);
     }
 }
